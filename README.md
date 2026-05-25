@@ -9,19 +9,44 @@ security posture before using it in production.
 
 ## Install
 
-Replace this section with the generated repository's installation steps.
+Install from the repository while the package is pre-release:
 
 ```sh
-pnpm install
+npm install
+npm run build
+npm link
 ```
 
 ## Use
 
-Replace this section with the smallest useful example for the generated
-repository.
+Split a log into JSON, Markdown, and per-packet files:
 
 ```sh
 logsplitter split ./fixtures/node-failure.log --out .logsplitter/node
+```
+
+Read the generated summary:
+
+```sh
+logsplitter summarize .logsplitter/node/logsplitter.json
+```
+
+Extract one packet by id or fingerprint:
+
+```sh
+logsplitter extract .logsplitter/node/logsplitter.json packet-001
+```
+
+Compare two split outputs:
+
+```sh
+logsplitter compare before/logsplitter.json after/logsplitter.json
+```
+
+Use `-` or omit the path to read from stdin:
+
+```sh
+cat build.log | logsplitter split - --out .logsplitter/stdin
 ```
 
 ## Verify
@@ -41,10 +66,7 @@ should be small, reviewable, and verified before review.
 
 ## Security
 
-See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance. Replace
-the default security policy before publishing the generated repository.
-
-These links assume this README has been copied to the generated repository root.
+`logsplitter` never executes log contents. It flags likely secrets in packets and summaries so maintainers can review logs before sharing them. See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance.
 
 ## License
 

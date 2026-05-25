@@ -1,0 +1,28 @@
+{
+  "name": "logsplitter",
+  "version": 1,
+  "commands": {
+    "split": {
+      "description": "Create packetized JSON and Markdown from a raw log.",
+      "example": "logsplitter split build.log --out .logsplitter/current",
+      "outputs": ["logsplitter.json", "summary.md", "packets/*.json", "packets/*.md"]
+    },
+    "summarize": {
+      "description": "Render a Markdown summary from logsplitter.json.",
+      "example": "logsplitter summarize .logsplitter/current/logsplitter.json"
+    },
+    "extract": {
+      "description": "Render one packet selected by id or fingerprint.",
+      "example": "logsplitter extract .logsplitter/current/logsplitter.json packet-001"
+    },
+    "compare": {
+      "description": "Compare before and after split outputs by packet fingerprint.",
+      "example": "logsplitter compare before/logsplitter.json after/logsplitter.json"
+    }
+  },
+  "safety": {
+    "executesLogContents": false,
+    "flagsLikelySecrets": true,
+    "shareableDefault": "review-required"
+  }
+}

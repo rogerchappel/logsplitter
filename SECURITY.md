@@ -2,18 +2,7 @@
 
 ## Supported Versions
 
-Replace this section with the supported versions for `logsplitter`.
-
-Example:
-
-```md
-| Version | Supported |
-| --- | --- |
-| .x | Yes |
-| < .0 | No |
-```
-
-If the project does not publish versioned releases yet, say that clearly.
+`logsplitter` has not published a stable release yet. Security fixes are handled on the `main` branch until versioned releases begin.
 
 ## Reporting a Vulnerability
 
