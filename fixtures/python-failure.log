@@ -1,0 +1,12 @@
+$ pytest
+============================= test session starts =============================
+tests/test_api.py::test_create_user FAILED
+
+Traceback (most recent call last):
+  File "/repo/tests/test_api.py", line 17, in test_create_user
+    assert response.status_code == 201
+AssertionError: assert 500 == 201
+
+WARNING: retrying database connection
+WARNING: retrying database connection
+WARNING: retrying database connection

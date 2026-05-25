@@ -1,0 +1,7 @@
+$ make release
+run: ./scripts/package.sh
+building package
+building package
+building package
+fatal: tag v1.2.3 already exists
+Error: release failed
