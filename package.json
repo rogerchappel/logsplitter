@@ -4,14 +4,14 @@
   "description": "Local-first CLI for slicing noisy logs into searchable failure packets.",
   "type": "module",
   "bin": {
-    "logsplitter": "./dist/cli.js"
+    "logsplitter": "./dist/src/cli.js"
   },
-  "main": "./dist/index.js",
+  "main": "./dist/src/index.js",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/src/index.js"
   },
   "files": [
-    "dist",
+    "dist/src",
     "fixtures",
     "examples",
     "README.md",
