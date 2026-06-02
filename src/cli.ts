@@ -15,6 +15,15 @@ async function main(argv: string[]): Promise<void> {
   const args = parseArgs(argv);
 
   switch (args.command) {
+    case "--help":
+    case "-h":
+      printHelp();
+      return;
+    case "--version":
+    case "-v":
+    case "version":
+      process.stdout.write("0.1.0\n");
+      return;
     case "split":
       await splitCommand(args);
       return;
