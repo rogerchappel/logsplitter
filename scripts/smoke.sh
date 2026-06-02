@@ -7,6 +7,8 @@ cd "$repo_root"
 out_dir="tmp/smoke-node"
 rm -rf "$out_dir"
 
+node dist/src/cli.js --help | grep -q "logsplitter"
+node dist/src/cli.js --version | grep -q "0.1.0"
 node dist/src/cli.js split fixtures/node-failure.log --out "$out_dir" >/tmp/logsplitter-smoke-summary.md
 test -f "$out_dir/logsplitter.json"
 test -f "$out_dir/summary.md"
