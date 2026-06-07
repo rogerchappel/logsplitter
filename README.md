@@ -68,6 +68,15 @@ should be small, reviewable, and verified before review.
 
 `logsplitter` never executes log contents. It flags likely secrets in packets and summaries so maintainers can review logs before sharing them. See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance.
 
+## Verification
+
+Use the package scripts as the public smoke gates before publishing or changing CLI behavior.
+
+- `npm run release:check`
+- `npm run test`
+- `npm run smoke`
+- `npm run check`
+
 ## License
 
 MIT
