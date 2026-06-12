@@ -26,8 +26,9 @@
     "check": "tsc --noEmit",
     "test": "npm run build && node --test dist/**/*.test.js",
     "smoke": "npm run build && bash scripts/smoke.sh",
-    "package:smoke": "npm pack --dry-run",
-    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
+    "package:smoke": "npm run build && npm pack --dry-run",
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke",
+    "prepack": "npm run build"
   },
   "keywords": [
     "logs",
