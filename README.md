@@ -49,16 +49,6 @@ Use `-` or omit the path to read from stdin:
 cat build.log | logsplitter split - --out .logsplitter/stdin
 ```
 
-## Verify
-
-Run the local validation script before opening a pull request:
-
-```sh
-bash scripts/validate.sh
-```
-
-`scripts/validate.sh` runs the repository's standard local checks when they are defined and will also run `agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as a skip, not a failure.
-
 ## Package contents
 
 The npm package allowlist includes the runtime files plus the public support
@@ -77,19 +67,6 @@ should be small, reviewable, and verified before review.
 
 ## Verification
 
-Use the package scripts as the public smoke gates before publishing or changing CLI behavior.
-
-- `npm run release:check`
-- `npm run test`
-- `npm run smoke`
-- `npm run check`
-
-## License
-
-MIT
-
-## Verification
-
 Run the release-readiness checks before publishing or cutting a PR:
 
 ```bash
@@ -101,4 +78,9 @@ npm run package:smoke
 npm run release:check
 ```
 
+`scripts/validate.sh` runs the repository's standard local checks when they are defined and will also run `agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as a skip, not a failure.
 Use `npm run package:smoke` or `npm pack --dry-run` to confirm the published tarball includes the support docs and runnable package contents.
+
+## License
+
+MIT
