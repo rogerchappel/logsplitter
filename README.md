@@ -52,9 +52,14 @@ cat build.log | logsplitter split - --out .logsplitter/stdin
 ## Package contents
 
 The npm package allowlist includes the runtime files plus the public support
-documents needed for release review: `README.md`, `LICENSE`, `SECURITY.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`.
+fixtures, examples, and support documents needed for release review: `README.md`,
+`LICENSE`, `SECURITY.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, and
+`CODE_OF_CONDUCT.md`.
 Run `npm run package:smoke` or `npm pack --dry-run` before publishing to
 confirm those files are still present in the tarball.
+
+See [examples/README.md](examples/README.md) for a fixture-backed walkthrough of
+the split, summarize, extract, and compare commands.
 
 ## Contributing
 
