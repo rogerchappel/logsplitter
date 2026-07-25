@@ -25,6 +25,11 @@ Split a log into JSON, Markdown, and per-packet files:
 logsplitter split ./fixtures/node-failure.log --out .logsplitter/node
 ```
 
+`--context` accepts a non-negative integer and defaults to `2`. Reusing an
+output directory replaces the generated snapshot: obsolete
+`packets/packet-*.json` and `packets/packet-*.md` files are removed, while
+unrelated files in the directory are preserved.
+
 Read the generated summary:
 
 ```sh
