@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { summarizeSplit } from "./summary.js";
 import type { LogPacket, SplitResult } from "./types.js";
@@ -18,6 +18,7 @@ export async function readSplitResult(path: string): Promise<SplitResult> {
 export async function writeSplitResult(result: SplitResult, outDir: string): Promise<void> {
   const packetsDir = join(outDir, "packets");
   await mkdir(packetsDir, { recursive: true });
+  await removeObsoletePacketFiles(packetsDir, result);
   await writeJson(join(outDir, "logsplitter.json"), result);
   await writeFile(join(outDir, "summary.md"), summarizeSplit(result), "utf8");
 
@@ -27,6 +28,13 @@ export async function writeSplitResult(result: SplitResult, outDir: string): Pro
       writeFile(join(packetsDir, `${packet.id}.md`), renderPacketMarkdown(packet), "utf8")
     ])
   );
+}
+
+async function removeObsoletePacketFiles(packetsDir: string, result: SplitResult): Promise<void> {
+  const expected = new Set(result.packets.flatMap((packet) => [`${packet.id}.json`, `${packet.id}.md`]));
+  const generatedPacketName = /^packet-\d+\.(?:json|md)$/;
+  const obsolete = (await readdir(packetsDir)).filter((name) => generatedPacketName.test(name) && !expected.has(name));
+  await Promise.all(obsolete.map((name) => unlink(join(packetsDir, name))));
 }
 
 export function renderPacketMarkdown(packet: LogPacket): string {

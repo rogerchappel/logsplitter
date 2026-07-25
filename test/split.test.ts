@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, rm } from "node:fs/promises";
+import { readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 import { compareSplits, splitLog, writeSplitResult } from "../src/index.js";
@@ -82,6 +82,34 @@ test("writeSplitResult writes JSON, summary, and packet markdown", async () => {
   assert.equal((json as { source: string }).source, "inline");
   assert.match(summary, /Packets: 1/);
   assert.match(packet, /Error: file write failed/);
+
+  await rm(out, { recursive: true, force: true });
+});
+
+test("writeSplitResult removes obsolete packet artifacts but preserves unrelated files", async () => {
+  const out = join("tmp", "split-rerun-test");
+  await rm(out, { recursive: true, force: true });
+
+  const first = splitLog("Error: first\nok\nError: second\n", "first", {
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    contextLines: 0
+  });
+  await writeSplitResult(first, out);
+  await writeFile(join(out, "packets", "notes.md"), "keep me\n", "utf8");
+
+  const second = splitLog("Error: only\n", "second", {
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    contextLines: 0
+  });
+  await writeSplitResult(second, out);
+
+  const manifest = JSON.parse(await readFile(join(out, "logsplitter.json"), "utf8")) as {
+    packets: Array<{ id: string }>;
+  };
+  const packetFiles = (await readdir(join(out, "packets"))).filter((name) => /^packet-\d+\.(json|md)$/.test(name));
+
+  assert.deepEqual(packetFiles.sort(), manifest.packets.flatMap((packet) => [`${packet.id}.json`, `${packet.id}.md`]).sort());
+  assert.equal(await readFile(join(out, "packets", "notes.md"), "utf8"), "keep me\n");
 
   await rm(out, { recursive: true, force: true });
 });

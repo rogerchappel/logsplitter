@@ -78,7 +78,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 async function splitCommand(args: ParsedArgs): Promise<void> {
   const inputPath = args.positional[0];
   const out = stringFlag(args, "out") ?? ".logsplitter";
-  const contextLines = Number(stringFlag(args, "context") ?? "2");
+  const contextLines = contextFlag(args);
   const input = await readTextInput(inputPath);
   const result = splitLog(input.text, input.source, { contextLines });
   await writeSplitResult(result, out);
@@ -124,6 +124,15 @@ async function compareCommand(args: ParsedArgs): Promise<void> {
     return;
   }
   process.stdout.write(renderCompareMarkdown(result));
+}
+
+function contextFlag(args: ParsedArgs): number {
+  const raw = args.flags.get("context") ?? "2";
+  const value = typeof raw === "string" ? Number(raw) : Number.NaN;
+  if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
+    throw new Error("--context must be a non-negative integer");
+  }
+  return value;
 }
 
 function stringFlag(args: ParsedArgs, name: string): string | undefined {
