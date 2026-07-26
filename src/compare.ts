@@ -1,15 +1,21 @@
 import type { CompareResult, LogPacket, SplitResult } from "./types.js";
 
 export function compareSplits(before: SplitResult, after: SplitResult): CompareResult {
-  const beforeByFingerprint = byFingerprint(before.packets);
-  const afterByFingerprint = byFingerprint(after.packets);
+  const remainingBefore = countFingerprints(before.packets);
+  const remainingAfter = countFingerprints(after.packets);
+  const added: LogPacket[] = [];
+  const unchanged: LogPacket[] = [];
+
+  for (const packet of after.packets) {
+    (consumeFingerprint(remainingBefore, packet.fingerprint) ? unchanged : added).push(packet);
+  }
 
   return {
     before: before.source,
     after: after.source,
-    added: after.packets.filter((packet) => !beforeByFingerprint.has(packet.fingerprint)),
-    removed: before.packets.filter((packet) => !afterByFingerprint.has(packet.fingerprint)),
-    unchanged: after.packets.filter((packet) => beforeByFingerprint.has(packet.fingerprint))
+    added,
+    removed: before.packets.filter((packet) => !consumeFingerprint(remainingAfter, packet.fingerprint)),
+    unchanged
   };
 }
 
@@ -26,8 +32,21 @@ export function renderCompareMarkdown(result: CompareResult): string {
   ].join("\n");
 }
 
-function byFingerprint(packets: LogPacket[]): Map<string, LogPacket> {
-  return new Map(packets.map((packet) => [packet.fingerprint, packet]));
+function countFingerprints(packets: LogPacket[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const packet of packets) {
+    counts.set(packet.fingerprint, (counts.get(packet.fingerprint) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function consumeFingerprint(counts: Map<string, number>, fingerprint: string): boolean {
+  const remaining = counts.get(fingerprint) ?? 0;
+  if (remaining === 0) {
+    return false;
+  }
+  counts.set(fingerprint, remaining - 1);
+  return true;
 }
 
 function renderList(label: string, packets: LogPacket[]): string {
