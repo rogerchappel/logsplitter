@@ -68,6 +68,40 @@ test("compareSplits identifies added and unchanged packets", () => {
   assert.equal(comparison.removed.length, 0);
 });
 
+test("compareSplits reports an additional duplicate occurrence in after order", () => {
+  const before = splitLog("Error: same failure\n", "before", {
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    contextLines: 0
+  });
+  const after = splitLog("Error: same failure\nok\nError: same failure\n", "after", {
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    contextLines: 0
+  });
+
+  const comparison = compareSplits(before, after);
+
+  assert.deepEqual(comparison.unchanged.map((packet) => packet.lineStart), [1]);
+  assert.deepEqual(comparison.added.map((packet) => packet.lineStart), [3]);
+  assert.deepEqual(comparison.removed, []);
+});
+
+test("compareSplits reports a removed duplicate occurrence in before order", () => {
+  const before = splitLog("Error: same failure\nok\nError: same failure\n", "before", {
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    contextLines: 0
+  });
+  const after = splitLog("Error: same failure\n", "after", {
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    contextLines: 0
+  });
+
+  const comparison = compareSplits(before, after);
+
+  assert.deepEqual(comparison.unchanged.map((packet) => packet.lineStart), [1]);
+  assert.deepEqual(comparison.added, []);
+  assert.deepEqual(comparison.removed.map((packet) => packet.lineStart), [3]);
+});
+
 test("writeSplitResult writes JSON, summary, and packet markdown", async () => {
   const out = join("tmp", "split-test");
   await rm(out, { recursive: true, force: true });

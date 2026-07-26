@@ -11,5 +11,9 @@ node dist/src/cli.js extract tmp/node-split/logsplitter.json packet-001
 node dist/src/cli.js compare tmp/node-split/logsplitter.json tmp/node-split/logsplitter.json
 ```
 
+`compare` matches each fingerprint occurrence once, in snapshot order. Repeated
+packets are therefore counted individually: an extra copy is added, a missing
+copy is removed, and the copies present in both snapshots are unchanged.
+
 The package smoke script runs the same command family against
 `fixtures/node-failure.log` before packing.
