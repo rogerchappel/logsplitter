@@ -11,6 +11,11 @@ format and uses semantic versioning when versioned releases are published.
 
 - Initial project setup.
 
+### Fixed
+
+- Compare repeated packet fingerprints by occurrence instead of treating every
+  duplicate as unchanged.
+
 ## Release Links
 
 - Unreleased:

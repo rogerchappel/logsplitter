@@ -48,6 +48,11 @@ Compare two split outputs:
 logsplitter compare before/logsplitter.json after/logsplitter.json
 ```
 
+Comparison matches packet occurrences by fingerprint in snapshot order. If the
+same fingerprint appears more times in one snapshot, only the unmatched
+occurrences are reported as added or removed; matched occurrences remain
+unchanged.
+
 Use `-` or omit the path to read from stdin:
 
 ```sh
