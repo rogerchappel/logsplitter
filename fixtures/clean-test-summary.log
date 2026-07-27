@@ -1,0 +1,6 @@
+> npm test
+
+PASS src/sum.test.ts
+PASS src/api.test.ts
+Tests: 2 passed, 0 failed
+2 passed, 0 failed in 0.42s

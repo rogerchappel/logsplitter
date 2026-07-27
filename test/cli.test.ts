@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import test from "node:test";
@@ -41,4 +41,26 @@ test("split rejects invalid context values with a clear error", async () => {
     execFileAsync(process.execPath, [cli, "split", "--context"]),
     /--context must be a non-negative integer/
   );
+});
+
+test("split does not emit failed-test packets for a clean test summary fixture", async () => {
+  const out = join("tmp", "clean-test-summary");
+  await rm(out, { recursive: true, force: true });
+
+  await execFileAsync(process.execPath, [
+    cli,
+    "split",
+    join("fixtures", "clean-test-summary.log"),
+    "--out",
+    out,
+    "--context",
+    "0"
+  ]);
+
+  const manifest = JSON.parse(await readFile(join(out, "logsplitter.json"), "utf8")) as {
+    packets: Array<{ kind: string }>;
+  };
+  assert.equal(manifest.packets.some((packet) => packet.kind === "failed-test"), false);
+
+  await rm(out, { recursive: true, force: true });
 });
