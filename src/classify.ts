@@ -14,6 +14,8 @@ const FAILED_TEST_PATTERNS = [
   /\b\d+\s+failed\b/i
 ];
 
+const ZERO_FAILURE_COUNT_PATTERN = /\b0\s+(?:failed|failing)\b/gi;
+
 const STACK_PATTERNS = [
   /^\s+at .+\(.+:\d+:\d+\)/,
   /^\s*File ".+", line \d+, in /,
@@ -34,7 +36,8 @@ export function classifyLine(line: string): PacketKind | undefined {
   if (STACK_PATTERNS.some((pattern) => pattern.test(line))) {
     return "stack-trace";
   }
-  if (FAILED_TEST_PATTERNS.some((pattern) => pattern.test(line))) {
+  const failureText = line.replace(ZERO_FAILURE_COUNT_PATTERN, "");
+  if (FAILED_TEST_PATTERNS.some((pattern) => pattern.test(failureText))) {
     return "failed-test";
   }
   if (ERROR_PATTERNS.some((pattern) => pattern.test(line))) {
