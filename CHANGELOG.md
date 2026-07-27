@@ -15,6 +15,8 @@ format and uses semantic versioning when versioned releases are published.
 
 - Compare repeated packet fingerprints by occurrence instead of treating every
   duplicate as unchanged.
+- Ignore zero-count test summary phrases such as `0 failed` and `0 failing`
+  while continuing to classify positive failure counts and diagnostics.
 
 ## Release Links
 
