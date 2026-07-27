@@ -33,6 +33,46 @@ test("splitLog extracts failed test packets with stable fingerprints", () => {
   assert.equal(first.packets[0]?.fingerprint, second.packets[0]?.fingerprint);
 });
 
+test("splitLog does not classify zero-failure framework summaries as failed tests", () => {
+  const summaries = [
+    "Tests: 10 passed, 0 failed",
+    "10 passed, 0 failed in 1.24s",
+    "12 specs, 0 failing"
+  ];
+
+  for (const summary of summaries) {
+    const result = splitLog(summary, "inline", {
+      generatedAt: "2026-01-01T00:00:00.000Z",
+      contextLines: 0
+    });
+
+    assert.equal(
+      result.packets.some((packet) => packet.kind === "failed-test"),
+      false,
+      `unexpected failed-test packet for: ${summary}`
+    );
+  }
+});
+
+test("splitLog keeps positive failure summaries and diagnostics as failed tests", () => {
+  const failures = [
+    "Tests: 9 passed, 1 failed",
+    "9 passed, 2 failed in 1.24s",
+    "10 specs, 2 failing",
+    "FAIL src/api.test.ts",
+    "request failed after 1200ms"
+  ];
+
+  for (const failure of failures) {
+    const result = splitLog(failure, "inline", {
+      generatedAt: "2026-01-01T00:00:00.000Z",
+      contextLines: 0
+    });
+
+    assert.equal(result.packets[0]?.kind, "failed-test", `expected failed-test packet for: ${failure}`);
+  }
+});
+
 test("splitLog reports secret warnings and repeated noise", () => {
   const result = splitLog(
     [
