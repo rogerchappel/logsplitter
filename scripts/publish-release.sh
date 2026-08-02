@@ -11,17 +11,23 @@ if [[ -z "$release_tag" ]]; then
 fi
 
 pack_output="$(npm pack --json)"
-package_tarball="$(node -e '
+package_details="$(node -e '
   const chunks = [];
   process.stdin.on("data", chunk => chunks.push(chunk));
   process.stdin.on("end", () => {
     const result = JSON.parse(Buffer.concat(chunks));
-    if (!Array.isArray(result) || result.length !== 1 || !result[0].filename) {
+    if (!Array.isArray(result) || result.length !== 1 || !result[0].filename || !result[0].version) {
       throw new Error("npm pack did not report exactly one tarball");
     }
-    process.stdout.write(result[0].filename);
+    process.stdout.write(`${result[0].filename}\t${result[0].version}`);
   });
 ' <<<"$pack_output")"
+IFS=$'\t' read -r package_tarball package_version <<< "$package_details"
+
+if [[ "$release_tag" != "v$package_version" && "${RELEASE_DRY_RUN:-0}" != "1" ]]; then
+  echo "Tag $release_tag does not match package version $package_version" >&2
+  exit 1
+fi
 
 if [[ ! -f "$package_tarball" ]]; then
   echo "npm pack reported missing tarball: $package_tarball" >&2

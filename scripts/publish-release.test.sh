@@ -14,7 +14,7 @@ cat > "$test_root/bin/npm" <<'EOF'
 set -euo pipefail
 if [[ "$1" == "pack" ]]; then
   touch logsplitter-0.1.0.tgz
-  printf '[{"filename":"logsplitter-0.1.0.tgz"}]\n'
+  printf '[{"filename":"logsplitter-0.1.0.tgz","version":"0.1.0"}]\n'
 elif [[ "$1" == "publish" ]]; then
   printf 'npm %s\n' "$*" >> "$EVENT_LOG"
   [[ "${FAIL_PUBLISH:-0}" != "1" ]]
