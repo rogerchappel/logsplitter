@@ -96,6 +96,26 @@ npm run release:check
 `scripts/validate.sh` runs the repository's standard local checks when they are defined and will also run `agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as a skip, not a failure.
 Use `npm run package:smoke` or `npm pack --dry-run` to confirm the published tarball includes the support docs and runnable package contents.
 
+## Releases
+
+The `Release` workflow runs when a `v*.*.*` tag is pushed. The tag must match
+the version in `package.json` (for example, package version `0.1.0` is released
+by tag `v0.1.0`). The workflow runs the release checks, builds one tarball with
+`npm pack`, publishes that exact file to npm with provenance, and only then
+creates the GitHub release with the same tarball attached. A failed npm publish
+therefore cannot leave behind a misleading GitHub release.
+
+Publishing uses npm trusted publishing rather than a long-lived npm token. The
+`logsplitter` package's trusted publisher on npmjs.com must name GitHub
+repository `rogerchappel/logsplitter` and workflow file
+`.github/workflows/release.yml`; no GitHub environment is used. The workflow's
+`id-token: write` permission and npm registry setup provide the OIDC credentials.
+
+Pull requests that change release files run the `Release dry run` workflow. It
+exercises the publish driver with `npm publish --dry-run --provenance` and runs
+a disposable mocked release that proves a publish failure prevents the GitHub
+release command.
+
 ## License
 
 MIT
