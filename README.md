@@ -25,7 +25,9 @@ Split a log into JSON, Markdown, and per-packet files:
 logsplitter split ./fixtures/node-failure.log --out .logsplitter/node
 ```
 
-`--context` accepts a non-negative integer and defaults to `2`. Reusing an
+When `--out` is omitted, `split` writes to `.logsplitter`; when supplied,
+`--out` requires an explicit directory value. `--context` accepts a
+non-negative integer and defaults to `2`. Reusing an
 output directory replaces the generated snapshot: obsolete
 `packets/packet-*.json` and `packets/packet-*.md` files are removed, while
 unrelated files in the directory are preserved.
@@ -36,11 +38,17 @@ Read the generated summary:
 logsplitter summarize .logsplitter/node/logsplitter.json
 ```
 
+Pass `--out summary.md` to write the summary to a file. The value is required
+whenever `--out` is present.
+
 Extract one packet by id or fingerprint:
 
 ```sh
 logsplitter extract .logsplitter/node/logsplitter.json packet-001
 ```
+
+Pass `--out packet.md` to write the packet to a file. The value is required
+whenever `--out` is present.
 
 Compare two split outputs:
 

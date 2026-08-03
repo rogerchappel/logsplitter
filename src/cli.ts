@@ -11,6 +11,8 @@ interface ParsedArgs {
   flags: Map<string, string | boolean>;
 }
 
+const valueFlags = new Set(["context", "out"]);
+
 async function main(argv: string[]): Promise<void> {
   const args = parseArgs(argv);
 
@@ -59,12 +61,18 @@ function parseArgs(argv: string[]): ParsedArgs {
 
     const [name, inlineValue] = arg.slice(2).split("=", 2);
     if (inlineValue !== undefined) {
+      if (valueFlags.has(name) && inlineValue.length === 0) {
+        throw new Error(`--${name} requires a value`);
+      }
       flags.set(name, inlineValue);
       continue;
     }
 
     const next = rest[index + 1];
-    if (next && !next.startsWith("--")) {
+    if (valueFlags.has(name)) {
+      if (!next || next.startsWith("--")) {
+        throw new Error(`--${name} requires a value`);
+      }
       flags.set(name, next);
       index += 1;
     } else {
@@ -152,10 +160,12 @@ function printHelp(): void {
   process.stdout.write(`logsplitter
 
 Usage:
-  logsplitter split [file|-] --out .logsplitter/name [--context 2]
+  logsplitter split [file|-] [--out directory] [--context 2]
   logsplitter summarize .logsplitter/name/logsplitter.json [--out summary.md]
   logsplitter extract .logsplitter/name/logsplitter.json packet-001 [--out packet.md]
   logsplitter compare before.json after.json [--json]
+
+split defaults to --out .logsplitter. When present, --out requires a value.
 `);
 }
 
