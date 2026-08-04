@@ -80,6 +80,53 @@ test("commands reject missing output values before creating output", async () =>
   await rm(sandbox, { recursive: true, force: true });
 });
 
+test("commands reject unknown or unsupported flags before reading input or creating output", async () => {
+  const sandbox = join("tmp", "cli-unknown-flags");
+  await rm(sandbox, { recursive: true, force: true });
+  await mkdir(sandbox, { recursive: true });
+
+  for (const args of [
+    ["split", "missing.log", "--bogus", "--out", "result"],
+    ["split", "missing.log", "--json", "--out", "result"],
+    ["summarize", "missing.json", "--context", "0"],
+    ["extract", "missing.json", "packet-001", "--json"],
+    ["compare", "missing-before.json", "missing-after.json", "--out", "result"]
+  ]) {
+    await assert.rejects(
+      execFileAsync(process.execPath, [join(process.cwd(), cli), ...args], { cwd: sandbox }),
+      (error: unknown) => {
+        const failure = error as { code?: number; stderr?: string };
+        assert.notEqual(failure.code, 0);
+        assert.match(failure.stderr ?? "", /Unknown flag for \w+: --\w+/);
+        return true;
+      }
+    );
+  }
+
+  assert.deepEqual(await readdir(sandbox), []);
+  await rm(sandbox, { recursive: true, force: true });
+});
+
+test("compare accepts its documented json flag without a value", async () => {
+  const out = join("tmp", "cli-compare-json");
+  await rm(out, { recursive: true, force: true });
+  await execFileAsync(process.execPath, [cli, "split", join("fixtures", "node-failure.log"), "--out", out]);
+  const manifest = join(out, "logsplitter.json");
+  const result = await execFileAsync(process.execPath, [cli, "compare", manifest, manifest, "--json"]);
+  const comparison = JSON.parse(result.stdout) as { added: unknown[]; removed: unknown[]; unchanged: unknown[] };
+  assert.deepEqual(comparison.added, []);
+  assert.deepEqual(comparison.removed, []);
+  assert.equal(comparison.unchanged.length, 1);
+
+  await assert.rejects(execFileAsync(process.execPath, [cli, "compare", manifest, manifest, "--json=true"]), (error: unknown) => {
+    const failure = error as { code?: number; stderr?: string };
+    assert.notEqual(failure.code, 0);
+    assert.match(failure.stderr ?? "", /--json does not accept a value/);
+    return true;
+  });
+  await rm(out, { recursive: true, force: true });
+});
+
 test("split rejects invalid context values with a clear error", async () => {
   for (const value of ["nope", "Infinity", "-1", "1.5"]) {
     await assert.rejects(
