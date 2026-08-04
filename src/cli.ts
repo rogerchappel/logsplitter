@@ -12,6 +12,12 @@ interface ParsedArgs {
 }
 
 const valueFlags = new Set(["context", "out"]);
+const commandFlags = new Map<string, ReadonlySet<string>>([
+  ["split", new Set(["context", "out"])],
+  ["summarize", new Set(["out"])],
+  ["extract", new Set(["out"])],
+  ["compare", new Set(["json"])]
+]);
 
 async function main(argv: string[]): Promise<void> {
   const args = parseArgs(argv);
@@ -60,7 +66,13 @@ function parseArgs(argv: string[]): ParsedArgs {
     }
 
     const [name, inlineValue] = arg.slice(2).split("=", 2);
+    if (!commandFlags.get(command ?? "")?.has(name)) {
+      throw new Error(`Unknown flag for ${command ?? "this command"}: --${name}`);
+    }
     if (inlineValue !== undefined) {
+      if (!valueFlags.has(name)) {
+        throw new Error(`--${name} does not accept a value`);
+      }
       if (valueFlags.has(name) && inlineValue.length === 0) {
         throw new Error(`--${name} requires a value`);
       }
