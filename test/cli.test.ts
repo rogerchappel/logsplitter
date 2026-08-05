@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -7,6 +7,25 @@ import test from "node:test";
 
 const execFileAsync = promisify(execFile);
 const cli = join("dist", "src", "cli.js");
+
+async function execCliWithInput(args: string[], input: string): Promise<{ stdout: string; stderr: string }> {
+  return await new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [cli, ...args]);
+    let stdout = "";
+    let stderr = "";
+    child.stdout.setEncoding("utf8").on("data", (chunk: string) => (stdout += chunk));
+    child.stderr.setEncoding("utf8").on("data", (chunk: string) => (stderr += chunk));
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        reject(new Error(stderr));
+      }
+    });
+    child.stdin.end(input);
+  });
+}
 
 test("split accepts non-negative integer context values", async () => {
   const input = join("tmp", "cli-context.log");
@@ -105,6 +124,43 @@ test("commands reject unknown or unsupported flags before reading input or creat
 
   assert.deepEqual(await readdir(sandbox), []);
   await rm(sandbox, { recursive: true, force: true });
+});
+
+test("commands reject surplus operands before reading input or creating output", async () => {
+  const sandbox = join("tmp", "cli-surplus-operands");
+  await rm(sandbox, { recursive: true, force: true });
+  await mkdir(sandbox, { recursive: true });
+
+  for (const [args, message] of [
+    [["split", "missing.log", "extra.log", "--out", "result"], /split accepts at most one input path; received 2/],
+    [["summarize", "missing.json", "extra.json", "--out", "summary.md"], /summarize requires exactly one split JSON path; received 2/],
+    [["extract", "missing.json", "packet-001", "extra", "--out", "packet.md"], /extract requires exactly a split JSON path and packet id or fingerprint; received 3/],
+    [["compare", "missing-before.json", "missing-after.json", "extra.json"], /compare requires exactly before and after split JSON paths; received 3/]
+  ] as const) {
+    await assert.rejects(
+      execFileAsync(process.execPath, [join(process.cwd(), cli), ...args], { cwd: sandbox }),
+      (error: unknown) => {
+        const failure = error as { code?: number; stderr?: string };
+        assert.notEqual(failure.code, 0);
+        assert.match(failure.stderr ?? "", message);
+        return true;
+      }
+    );
+  }
+
+  assert.deepEqual(await readdir(sandbox), []);
+  await rm(sandbox, { recursive: true, force: true });
+});
+
+test("split continues to accept stdin without an input operand", async () => {
+  const out = join("tmp", "cli-stdin");
+  await rm(out, { recursive: true, force: true });
+
+  const result = await execCliWithInput(["split", "--out", out], "Error: failed from stdin\n");
+  assert.match(result.stdout, /Wrote .*logsplitter\.json/);
+  assert.match(await readFile(join(out, "logsplitter.json"), "utf8"), /failed from stdin/);
+
+  await rm(out, { recursive: true, force: true });
 });
 
 test("compare accepts its documented json flag without a value", async () => {

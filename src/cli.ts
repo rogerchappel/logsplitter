@@ -96,6 +96,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 async function splitCommand(args: ParsedArgs): Promise<void> {
+  requirePositionalCount(args, 0, 1, "split accepts at most one input path");
   const inputPath = args.positional[0];
   const out = stringFlag(args, "out") ?? ".logsplitter";
   const contextLines = contextFlag(args);
@@ -106,6 +107,7 @@ async function splitCommand(args: ParsedArgs): Promise<void> {
 }
 
 async function summarizeCommand(args: ParsedArgs): Promise<void> {
+  requirePositionalCount(args, 1, 1, "summarize requires exactly one split JSON path");
   const path = requiredPositional(args, 0, "summarize requires a split JSON path");
   const result = await readSplitResult(path);
   const summary = summarizeSplit(result);
@@ -118,6 +120,7 @@ async function summarizeCommand(args: ParsedArgs): Promise<void> {
 }
 
 async function extractCommand(args: ParsedArgs): Promise<void> {
+  requirePositionalCount(args, 2, 2, "extract requires exactly a split JSON path and packet id or fingerprint");
   const path = requiredPositional(args, 0, "extract requires a split JSON path");
   const selector = requiredPositional(args, 1, "extract requires a packet id or fingerprint");
   const result = await readSplitResult(path);
@@ -136,6 +139,7 @@ async function extractCommand(args: ParsedArgs): Promise<void> {
 }
 
 async function compareCommand(args: ParsedArgs): Promise<void> {
+  requirePositionalCount(args, 2, 2, "compare requires exactly before and after split JSON paths");
   const beforePath = requiredPositional(args, 0, "compare requires before and after split JSON paths");
   const afterPath = requiredPositional(args, 1, "compare requires before and after split JSON paths");
   const result = compareSplits(await readSplitResult(beforePath), await readSplitResult(afterPath));
@@ -166,6 +170,12 @@ function requiredPositional(args: ParsedArgs, index: number, message: string): s
     throw new Error(message);
   }
   return value;
+}
+
+function requirePositionalCount(args: ParsedArgs, minimum: number, maximum: number, message: string): void {
+  if (args.positional.length < minimum || args.positional.length > maximum) {
+    throw new Error(`${message}; received ${args.positional.length}`);
+  }
 }
 
 function printHelp(): void {
