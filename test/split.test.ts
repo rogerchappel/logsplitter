@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
-import { compareSplits, splitLog, writeSplitResult } from "../src/index.js";
+import { compareSplits, renderPacketMarkdown, splitLog, writeSplitResult } from "../src/index.js";
 
 test("splitLog extracts failed test packets with stable fingerprints", () => {
   const first = splitLog(
@@ -158,6 +158,27 @@ test("writeSplitResult writes JSON, summary, and packet markdown", async () => {
   assert.match(packet, /Error: file write failed/);
 
   await rm(out, { recursive: true, force: true });
+});
+
+test("renderPacketMarkdown preserves normal log lines in a text fence", () => {
+  const result = splitLog("Error: file write failed\n", "inline", {
+    generatedAt: "2026-01-01T00:00:00.000Z"
+  });
+
+  const markdown = renderPacketMarkdown(result.packets[0]!);
+
+  assert.match(markdown, /## Log\n\n```text\nError: file write failed\n```\n$/);
+});
+
+test("renderPacketMarkdown uses a longer fence than backtick runs in log lines", () => {
+  const result = splitLog("Error: docs example failed\n```text\nactual output\n```\n", "inline", {
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    contextLines: 3
+  });
+
+  const markdown = renderPacketMarkdown(result.packets[0]!);
+
+  assert.match(markdown, /## Log\n\n````text\nError: docs example failed\n```text\nactual output\n```\n````\n$/);
 });
 
 test("writeSplitResult removes obsolete packet artifacts but preserves unrelated files", async () => {

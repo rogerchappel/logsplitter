@@ -38,6 +38,11 @@ async function removeObsoletePacketFiles(packetsDir: string, result: SplitResult
 }
 
 export function renderPacketMarkdown(packet: LogPacket): string {
+  const longestBacktickRun = packet.lines.reduce((longest, line) => {
+    const runs = line.match(/`+/g) ?? [];
+    return Math.max(longest, ...runs.map((run) => run.length));
+  }, 0);
+  const fence = "`".repeat(Math.max(3, longestBacktickRun + 1));
   const lines = [
     `# ${packet.id} ${packet.title}`,
     "",
@@ -52,9 +57,9 @@ export function renderPacketMarkdown(packet: LogPacket): string {
     "",
     "## Log",
     "",
-    "```text",
+    `${fence}text`,
     ...packet.lines,
-    "```"
+    fence
   ];
 
   if (packet.secretWarnings.length > 0) {
