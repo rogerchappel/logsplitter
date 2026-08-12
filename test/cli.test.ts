@@ -224,3 +224,32 @@ test("split does not emit failed-test packets for a clean test summary fixture",
 
   await rm(out, { recursive: true, force: true });
 });
+
+test("split emits positive plural diagnostic counts and ignores zero counts", async () => {
+  const out = join("tmp", "diagnostic-counts");
+  await rm(out, { recursive: true, force: true });
+
+  await execFileAsync(process.execPath, [
+    cli,
+    "split",
+    join("fixtures", "diagnostic-counts.log"),
+    "--out",
+    out,
+    "--context",
+    "0"
+  ]);
+
+  const manifest = JSON.parse(await readFile(join(out, "logsplitter.json"), "utf8")) as {
+    packets: Array<{ kind: string; lines: string[] }>;
+  };
+  assert.deepEqual(
+    manifest.packets.map((packet) => [packet.kind, packet.lines]),
+    [
+      ["error", ["Errors: 2"]],
+      ["failed-test", ["Failures: 3"]],
+      ["warning", ["Warnings: 4"]]
+    ]
+  );
+
+  await rm(out, { recursive: true, force: true });
+});
