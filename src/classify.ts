@@ -29,12 +29,25 @@ const ERROR_PATTERNS = [
 
 const WARNING_PATTERNS = [/\b(warn|warning|deprecated)\b/i];
 
+const DIAGNOSTIC_COUNT_PATTERN = /^\s*(errors?|failures?|warnings?)\s*:\s*(\d+)\b/i;
+
 export function classifyLine(line: string): PacketKind | undefined {
   if (COMMAND_PATTERNS.some((pattern) => pattern.test(line))) {
     return "command";
   }
   if (STACK_PATTERNS.some((pattern) => pattern.test(line))) {
     return "stack-trace";
+  }
+  const diagnosticCount = line.match(DIAGNOSTIC_COUNT_PATTERN);
+  if (diagnosticCount) {
+    if (Number(diagnosticCount[2]) === 0) {
+      return undefined;
+    }
+    const label = diagnosticCount[1]?.toLowerCase();
+    if (label?.startsWith("failure")) {
+      return "failed-test";
+    }
+    return label?.startsWith("error") ? "error" : "warning";
   }
   const failureText = line.replace(ZERO_FAILURE_COUNT_PATTERN, "");
   if (FAILED_TEST_PATTERNS.some((pattern) => pattern.test(failureText))) {
