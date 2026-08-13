@@ -31,14 +31,22 @@ const WARNING_PATTERNS = [/\b(warn|warning|deprecated)\b/i];
 
 const DIAGNOSTIC_COUNT_PATTERN = /^\s*(errors?|failures?|warnings?)\s*:\s*(\d+)\b/i;
 
+const ANSI_OSC_PATTERN = /(?:\u001B\]|\u009D).*?(?:\u0007|\u001B\\|\u009C)/g;
+const ANSI_CSI_PATTERN = /(?:\u001B\[|\u009B)[0-?]*[ -/]*[@-~]/g;
+
+function classificationText(line: string): string {
+  return line.replace(ANSI_OSC_PATTERN, "").replace(ANSI_CSI_PATTERN, "");
+}
+
 export function classifyLine(line: string): PacketKind | undefined {
-  if (COMMAND_PATTERNS.some((pattern) => pattern.test(line))) {
+  const text = classificationText(line);
+  if (COMMAND_PATTERNS.some((pattern) => pattern.test(text))) {
     return "command";
   }
-  if (STACK_PATTERNS.some((pattern) => pattern.test(line))) {
+  if (STACK_PATTERNS.some((pattern) => pattern.test(text))) {
     return "stack-trace";
   }
-  const diagnosticCount = line.match(DIAGNOSTIC_COUNT_PATTERN);
+  const diagnosticCount = text.match(DIAGNOSTIC_COUNT_PATTERN);
   if (diagnosticCount) {
     if (Number(diagnosticCount[2]) === 0) {
       return undefined;
@@ -49,14 +57,14 @@ export function classifyLine(line: string): PacketKind | undefined {
     }
     return label?.startsWith("error") ? "error" : "warning";
   }
-  const failureText = line.replace(ZERO_FAILURE_COUNT_PATTERN, "");
+  const failureText = text.replace(ZERO_FAILURE_COUNT_PATTERN, "");
   if (FAILED_TEST_PATTERNS.some((pattern) => pattern.test(failureText))) {
     return "failed-test";
   }
-  if (ERROR_PATTERNS.some((pattern) => pattern.test(line))) {
+  if (ERROR_PATTERNS.some((pattern) => pattern.test(text))) {
     return "error";
   }
-  if (WARNING_PATTERNS.some((pattern) => pattern.test(line))) {
+  if (WARNING_PATTERNS.some((pattern) => pattern.test(text))) {
     return "warning";
   }
   return undefined;
