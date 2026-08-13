@@ -67,6 +67,12 @@ Use `-` or omit the path to read from stdin:
 cat build.log | logsplitter split - --out .logsplitter/stdin
 ```
 
+ANSI-colored terminal logs are supported. Classification ignores standard CSI
+sequences (including SGR colors) and terminated OSC sequences, while generated
+packet lines retain the input text and control sequences unchanged. Other
+terminal state, such as text overwritten by carriage returns or cursor movement,
+is not reconstructed; capture plain output when exact screen rendering matters.
+
 ## Package contents
 
 The npm package allowlist includes the runtime files plus the public support
