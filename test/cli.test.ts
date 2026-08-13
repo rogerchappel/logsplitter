@@ -253,3 +253,31 @@ test("split emits positive plural diagnostic counts and ignores zero counts", as
 
   await rm(out, { recursive: true, force: true });
 });
+
+test("split classifies colored fixture lines without changing packet contents", async () => {
+  const out = join("tmp", "ansi-colored");
+  await rm(out, { recursive: true, force: true });
+
+  await execFileAsync(process.execPath, [
+    cli,
+    "split",
+    join("fixtures", "ansi-colored.log"),
+    "--out",
+    out,
+    "--context",
+    "0"
+  ]);
+
+  const manifest = JSON.parse(await readFile(join(out, "logsplitter.json"), "utf8")) as {
+    packets: Array<{ kind: string; lines: string[] }>;
+  };
+  assert.deepEqual(
+    manifest.packets.map((packet) => packet.kind),
+    ["command", "stack-trace", "error", "failed-test", "warning"]
+  );
+  assert.equal(manifest.packets[0]?.lines[0], "\u001b[36m$ npm test\u001b[0m");
+  assert.equal(manifest.packets[0]?.lines[0]?.includes("\u001b[36m"), true);
+  assert.equal(manifest.packets.some((packet) => packet.lines.includes("\u001b[32mFailures: 0\u001b[0m")), false);
+
+  await rm(out, { recursive: true, force: true });
+});

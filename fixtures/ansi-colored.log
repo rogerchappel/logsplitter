@@ -1,0 +1,11 @@
+[36m$ npm test[0m
+
+[31m    at run (index.js:1:2)[0m
+
+[31mError: exploded[0m
+
+[31mFailures: 2[0m
+
+[33mWarning: deprecated[0m
+
+[32mFailures: 0[0m
