@@ -29,7 +29,8 @@ const ERROR_PATTERNS = [
 
 const WARNING_PATTERNS = [/\b(warn|warning|deprecated)\b/i];
 
-const DIAGNOSTIC_COUNT_PATTERN = /^\s*(errors?|failures?|warnings?)\s*:\s*(\d+)\b/i;
+const DIAGNOSTIC_COUNT_PATTERN =
+  /^\s*(errors?|failures?|warnings?)(?:\s+count)?(?:\s*(?::|=)\s*|\s+)(?:\((\d+)\)|(\d+))\s*$/i;
 
 const ANSI_OSC_PATTERN = /(?:\u001B\]|\u009D).*?(?:\u0007|\u001B\\|\u009C)/g;
 const ANSI_CSI_PATTERN = /(?:\u001B\[|\u009B)[0-?]*[ -/]*[@-~]/g;
@@ -48,7 +49,7 @@ export function classifyLine(line: string): PacketKind | undefined {
   }
   const diagnosticCount = text.match(DIAGNOSTIC_COUNT_PATTERN);
   if (diagnosticCount) {
-    if (Number(diagnosticCount[2]) === 0) {
+    if (Number(diagnosticCount[2] ?? diagnosticCount[3]) === 0) {
       return undefined;
     }
     const label = diagnosticCount[1]?.toLowerCase();
