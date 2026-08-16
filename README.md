@@ -73,6 +73,13 @@ packet lines retain the input text and control sequences unchanged. Other
 terminal state, such as text overwritten by carriage returns or cursor movement,
 is not reconstructed; capture plain output when exact screen rendering matters.
 
+Diagnostic summaries accept singular or plural `error`, `failure`, and `warning`
+labels, optionally followed by `count`. The non-negative count may be bare or
+parenthesized and separated from the label by whitespace, `:`, or `=` (for
+example, `Errors 2`, `Failure count: (1)`, or `Warnings = 0`). Positive counts
+produce the corresponding packet kind; zero-count summaries never produce a
+packet.
+
 ## Package contents
 
 The npm package allowlist includes the runtime files plus the public support

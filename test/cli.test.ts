@@ -225,7 +225,7 @@ test("split does not emit failed-test packets for a clean test summary fixture",
   await rm(out, { recursive: true, force: true });
 });
 
-test("split emits positive plural diagnostic counts and ignores zero counts", async () => {
+test("split emits mixed positive diagnostic summaries and ignores zero variants", async () => {
   const out = join("tmp", "diagnostic-counts");
   await rm(out, { recursive: true, force: true });
 
@@ -245,9 +245,9 @@ test("split emits positive plural diagnostic counts and ignores zero counts", as
   assert.deepEqual(
     manifest.packets.map((packet) => [packet.kind, packet.lines]),
     [
-      ["error", ["Errors: 2"]],
-      ["failed-test", ["Failures: 3"]],
-      ["warning", ["Warnings: 4"]]
+      ["error", ["Error count = (2)"]],
+      ["failed-test", ["Failures 3"]],
+      ["warning", ["Warning: (4)"]]
     ]
   );
 

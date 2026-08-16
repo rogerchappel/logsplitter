@@ -73,6 +73,23 @@ test("splitLog keeps positive failure summaries and diagnostics as failed tests"
   }
 });
 
+test("splitLog classifies mixed diagnostic summary shapes and suppresses zero forms", async () => {
+  const input = await readFile(join("fixtures", "diagnostic-counts.log"), "utf8");
+  const result = splitLog(input, "diagnostic-counts.log", {
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    contextLines: 0
+  });
+
+  assert.deepEqual(
+    result.packets.map((packet) => [packet.kind, packet.lines]),
+    [
+      ["error", ["Error count = (2)"]],
+      ["failed-test", ["Failures 3"]],
+      ["warning", ["Warning: (4)"]]
+    ]
+  );
+});
+
 test("splitLog reports secret warnings and repeated noise", () => {
   const result = splitLog(
     [

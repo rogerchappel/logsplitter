@@ -1,9 +1,9 @@
-Errors: 2
+Error count = (2)
 healthy separator
-Failures: 3
+Failures 3
 healthy separator
-Warnings: 4
+Warning: (4)
 healthy separator
-Errors: 0
-Failures: 0
-Warnings: 0
+Errors = 0
+Failure count (0)
+Warnings 0
