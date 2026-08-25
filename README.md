@@ -126,6 +126,10 @@ by tag `v0.1.0`). The workflow runs the release checks, builds one tarball with
 creates the GitHub release with the same tarball attached. A failed npm publish
 therefore cannot leave behind a misleading GitHub release.
 
+`package.json` is also the CLI's version source; no generated version file needs
+to be updated. `npm run release:check` includes a disposable bumped-version
+build that verifies `logsplitter --version` follows the package metadata.
+
 Publishing uses npm trusted publishing rather than a long-lived npm token. The
 `logsplitter` package's trusted publisher on npmjs.com must name GitHub
 repository `rogerchappel/logsplitter` and workflow file

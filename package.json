@@ -30,10 +30,11 @@
     "check": "tsc --noEmit",
     "test": "npm run build && node --test dist/**/*.test.js",
     "smoke": "npm run build && bash scripts/smoke.sh",
+    "version:smoke": "bash scripts/version-smoke.sh",
     "package:smoke": "npm run build && npm pack --dry-run",
     "release:workflow:test": "bash scripts/publish-release.test.sh",
     "release:dry-run": "GITHUB_REF_NAME=v0.0.0-test RELEASE_DRY_RUN=1 bash scripts/publish-release.sh",
-    "release:check": "npm run check && npm test && npm run build && npm run smoke && npm run package:smoke",
+    "release:check": "npm run check && npm test && npm run build && npm run smoke && npm run package:smoke && npm run version:smoke",
     "prepack": "npm run build"
   },
   "keywords": [

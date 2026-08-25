@@ -4,6 +4,7 @@ import { compareSplits, renderCompareMarkdown } from "./compare.js";
 import { readSplitResult, readTextInput, renderPacketMarkdown, writeSplitResult } from "./io.js";
 import { splitLog } from "./split.js";
 import { summarizeSplit } from "./summary.js";
+import { PACKAGE_VERSION } from "./version.js";
 
 interface ParsedArgs {
   command?: string;
@@ -30,7 +31,7 @@ async function main(argv: string[]): Promise<void> {
     case "--version":
     case "-v":
     case "version":
-      process.stdout.write("0.1.0\n");
+      process.stdout.write(`${PACKAGE_VERSION}\n`);
       return;
     case "split":
       await splitCommand(args);
