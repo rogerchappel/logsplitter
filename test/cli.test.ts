@@ -70,6 +70,38 @@ test("value-taking flags accept separated and inline syntax", async () => {
   await rm(outputRoot, { recursive: true, force: true });
 });
 
+test("summarize and extract refuse to overwrite their split JSON input", async () => {
+  const outputRoot = join("tmp", "cli-output-alias");
+  await rm(outputRoot, { recursive: true, force: true });
+  await execFileAsync(process.execPath, [cli, "split", join("fixtures", "node-failure.log"), "--out", outputRoot]);
+  const manifest = join(outputRoot, "logsplitter.json");
+  const original = await readFile(manifest);
+
+  for (const args of [
+    ["summarize", manifest, "--out", manifest],
+    ["summarize", manifest, "--out", join(outputRoot, "..", "cli-output-alias", "logsplitter.json")],
+    ["extract", manifest, "packet-001", "--out", manifest],
+    ["extract", manifest, "packet-001", "--out", join(outputRoot, ".", "logsplitter.json")]
+  ]) {
+    await assert.rejects(execFileAsync(process.execPath, [cli, ...args]), (error: unknown) => {
+      const failure = error as { code?: number; stderr?: string };
+      assert.notEqual(failure.code, 0);
+      assert.match(failure.stderr ?? "", /--out path must differ from the split JSON input/);
+      return true;
+    });
+    assert.deepEqual(await readFile(manifest), original);
+  }
+
+  const summary = join(outputRoot, "summary.md");
+  const packet = join(outputRoot, "packet.md");
+  await execFileAsync(process.execPath, [cli, "summarize", manifest, "--out", summary]);
+  await execFileAsync(process.execPath, [cli, "extract", manifest, "packet-001", "--out", packet]);
+  assert.match(await readFile(summary, "utf8"), /# logsplitter summary/);
+  assert.match(await readFile(packet, "utf8"), /packet-001/);
+
+  await rm(outputRoot, { recursive: true, force: true });
+});
+
 test("commands reject missing output values before creating output", async () => {
   const sandbox = join("tmp", "cli-missing-output");
   await rm(sandbox, { recursive: true, force: true });
