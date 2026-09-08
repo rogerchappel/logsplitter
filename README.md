@@ -39,7 +39,9 @@ logsplitter summarize .logsplitter/node/logsplitter.json
 ```
 
 Pass `--out summary.md` to write the summary to a file. The value is required
-whenever `--out` is present.
+whenever `--out` is present. The output path must not resolve to the split JSON
+input path; the command rejects direct and normalized aliases before writing so
+the source snapshot remains intact.
 
 Extract one packet by id or fingerprint:
 
@@ -48,7 +50,8 @@ logsplitter extract .logsplitter/node/logsplitter.json packet-001
 ```
 
 Pass `--out packet.md` to write the packet to a file. The value is required
-whenever `--out` is present.
+whenever `--out` is present. As with `summarize`, the output path cannot resolve
+to the split JSON input path.
 
 Compare two split outputs:
 
