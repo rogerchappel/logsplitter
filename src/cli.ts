@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { compareSplits, renderCompareMarkdown } from "./compare.js";
 import { readSplitResult, readTextInput, renderPacketMarkdown, writeSplitResult } from "./io.js";
 import { splitLog } from "./split.js";
@@ -110,9 +111,10 @@ async function splitCommand(args: ParsedArgs): Promise<void> {
 async function summarizeCommand(args: ParsedArgs): Promise<void> {
   requirePositionalCount(args, 1, 1, "summarize requires exactly one split JSON path");
   const path = requiredPositional(args, 0, "summarize requires a split JSON path");
+  const out = stringFlag(args, "out");
+  assertDistinctOutput(path, out);
   const result = await readSplitResult(path);
   const summary = summarizeSplit(result);
-  const out = stringFlag(args, "out");
   if (out) {
     await writeFile(out, summary, "utf8");
     return;
@@ -124,6 +126,8 @@ async function extractCommand(args: ParsedArgs): Promise<void> {
   requirePositionalCount(args, 2, 2, "extract requires exactly a split JSON path and packet id or fingerprint");
   const path = requiredPositional(args, 0, "extract requires a split JSON path");
   const selector = requiredPositional(args, 1, "extract requires a packet id or fingerprint");
+  const out = stringFlag(args, "out");
+  assertDistinctOutput(path, out);
   const result = await readSplitResult(path);
   const packet = result.packets.find((candidate) => candidate.id === selector || candidate.fingerprint === selector);
   if (!packet) {
@@ -131,7 +135,6 @@ async function extractCommand(args: ParsedArgs): Promise<void> {
   }
 
   const markdown = renderPacketMarkdown(packet);
-  const out = stringFlag(args, "out");
   if (out) {
     await writeFile(out, markdown, "utf8");
     return;
@@ -163,6 +166,12 @@ function contextFlag(args: ParsedArgs): number {
 function stringFlag(args: ParsedArgs, name: string): string | undefined {
   const value = args.flags.get(name);
   return typeof value === "string" ? value : undefined;
+}
+
+function assertDistinctOutput(input: string, output: string | undefined): void {
+  if (output && resolve(input) === resolve(output)) {
+    throw new Error("--out path must differ from the split JSON input");
+  }
 }
 
 function requiredPositional(args: ParsedArgs, index: number, message: string): string {
